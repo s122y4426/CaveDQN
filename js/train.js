@@ -193,6 +193,11 @@ let nextA = 0;
 let reward = 0;
 let epsilon = 0.5;
 
+// 各重みの最後にバイアス追加
+h1W.data.push(h1B.data[0]);
+h2W.data.push(h2B.data[0]);
+oW.data.push(oB.data[0]);
+
 // 正規化
 function norm(_list) {
   return _list.map((v) => v / _list.reduce((a, b) => a + b));
@@ -207,22 +212,22 @@ function Q(state) {
   x.data[0].push(1); //バイアス
 
   // Hidden layer1
-  h1W.data.push(h1B.data[0]); // バイアス追加
-  console.log("h1W: ", h1W);
+  h1W.data[h1W.rows - 1] = h1B.data[0]; //更新したバイアス
+  //("h1W: ", h1W);
   h1out = x.dot(h1W);
   //console.log("h1out: ", h1out);
   ReLU(h1out);
   h1out.data[0].push(1); //バイアス
 
   // Hidden layer2
-  h2W.data.push(h2B.data[0]); // バイアス追加
+  h2W.data[h2W.rows - 1] = h2B.data[0]; //更新したバイアス
   h2out = h2W.dot(h1out);
   //console.log("h1out: ", h1out);
   ReLU(h2out);
   h2out.data[0].push(1); //バイアス
 
   // Output layer
-  oW.data.push(oB.data[0]); // バイアス追加
+  oW.data[oW.rows - 1] = oB.data[0]; //更新したバイアス
   outY = h2out.dot(oW);
   console.log("outY: ", outY.data);
   return outY.data[0];
@@ -284,7 +289,7 @@ let count = 0;
 
 function mainloop() {
   return new Promise((resolve) => {
-    while (numberOfFrames < 3) {
+    while (numberOfFrames < 1000) {
       let prevState = Object.assign({}, currentState);
       console.log("-------------------------");
       console.log("mainloop: ", numberOfFrames + 1);
@@ -386,9 +391,6 @@ function mainloop() {
         }
       }
 
-      // TODO: バイアスは別にオブジェクト作って更新せねば…
-      // b -= eta* dBみたいな感じ　めんどい。。。
-
       // hidden2のdX
       for (let i = 0; i < h2W.cols; i++) {
         for (let j = 0; j < h2W.rows; j++) {
@@ -460,7 +462,7 @@ function mainloop() {
 ///  RUN
 ///////////////////////////////////////////////////////////////////////////////
 async function run() {
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 100; i++) {
     await init();
     await mainloop();
     if (err < 0.001) {
@@ -483,7 +485,7 @@ run();
 // 0.wallBottom変わらない問題 ○
 // 1.入力を変える　自機下部の情報も入れる ○
 // 収束したら終了する条件を入れる　○
-// 2.NN層を増やす
+// 2.NN層を増やす　○
 // 3.フーバー関数を導入
 // 4.バイアスの追加　○
 // 5.Trainボタンの実装

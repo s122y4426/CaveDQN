@@ -1,6 +1,21 @@
-_list = [0, 0, 0];
-for (let i = 0; i <= 10; i++) {
-  _list[0] += 1;
+class Matrix {
+  constructor(rows, cols) {
+    this.rows = rows;
+    this.cols = cols;
+    this.data = Array(this.rows)
+      .fill()
+      .map(() =>
+        Array(this.cols)
+          .fill()
+          .map(() => Math.random())
+      );
+  }
 }
 
-console.log(_list);
+let tes = new Matrix(4, 1);
+console.log(tes);
+
+let main = new Matrix(4, 4);
+console.log(main);
+
+console.log(main.data[main.rows - 1]);
