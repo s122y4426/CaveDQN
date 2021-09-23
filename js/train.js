@@ -1,4 +1,7 @@
 "use strict";
+var fs = require("fs");
+var text = 0;
+
 let y = 250, //自機位置
   v = 0, // 自機速度
   keyDown = false,
@@ -192,6 +195,7 @@ let prevA = 0;
 let nextA = 0;
 let reward = 0;
 let epsilon = 0.5;
+let gamma = 0.99;
 
 // 各重みの最後にバイアス追加
 h1W.data.push(h1B.data[0]);
@@ -284,7 +288,7 @@ let dh2X = new Matrix(5, 1);
 let dh2W = new Matrix(15, 5);
 let dh1out = new Matrix(15, 1);
 let dh1W = new Matrix(5, 15);
-let eta = 0.001;
+let eta = 0.0001;
 let count = 0;
 
 function mainloop() {
@@ -367,7 +371,16 @@ function mainloop() {
       //---------------------------------------------------------------------------------------------------------------------------------------------------------
       // 学習　微分パート
       console.log("-----学習----");
-      dE = currentQ[a] - (reward + nextQ[maxA]);
+      dE = currentQ[a] - (reward + gamma * nextQ[maxA]);
+
+      // 書き込み（収束確認用）
+      text = epoch_count + "," + numberOfFrames + "," + dE + "\n";
+      try {
+        fs.appendFileSync("テストoutput2.txt", text);
+        console.log("write end");
+      } catch (e) {
+        console.log(e);
+      }
 
       // 出力層oW（順入力x * 逆伝播d）
       for (let i = 0; i < oW.row; i++) {
@@ -461,8 +474,10 @@ function mainloop() {
 ///////////////////////////////////////////////////////////////////////////////
 ///  RUN
 ///////////////////////////////////////////////////////////////////////////////
+let epoch_count = 0;
 async function run() {
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 10000; i++) {
+    epoch_count = i;
     await init();
     await mainloop();
     if (err < 0.001) {
